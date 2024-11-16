@@ -1,5 +1,3 @@
-
-
 <template>
   <div id="graph"></div>
 </template>
@@ -7,6 +5,8 @@
 <script setup>
 import * as d3 from "d3";
 import { ref, onMounted, watch } from 'vue';
+import { Kekule } from 'kekule';
+import 'kekule/theme/default'; 
 
 let graph = {
   "links": [
@@ -127,6 +127,7 @@ let graph = {
 };
 
 function go() {
+  graph.links.forEach(link => {link.rand = Math.floor(Math.random()*101)-50;});
   const width = window.innerWidth, height = window.innerHeight;
   const color = d3.scaleOrdinal(d3.schemeCategory10);
   const simulation = d3.forceSimulation(graph.nodes)
@@ -147,8 +148,8 @@ function go() {
     .attr("viewBox", "0 0 10 10")
     .attr("refX", 10)
     .attr("refY", 5)
-    .attr("markerWidth", 10)
-    .attr("markerHeight", 10)
+    .attr("markerWidth", 5)
+    .attr("markerHeight", 5)
     .attr("orient", "auto")
     .append("path")
     .attr("fill", color)
@@ -156,15 +157,16 @@ function go() {
 
   const links = svg.append("g").attr("class", "links").selectAll("g")
     .data(graph.links).enter().append("g")
-  links.append("line")
+  links.append("path")
+    .attr("fill", "none")
     .attr("stroke", d => color(d.enzyme))
-    .attr("stroke-width", 1)
+    .attr("stroke-width", 2)
     .attr("marker-end", `url(${new URL(`#arrow`, location)})`);
   links.append("text")
     .text(function (d) {
       return d.enzyme;
     }).style('fill', 'white')
-      .style("font-style", "italic");
+    .style("font-style", "italic");
 
   const nodes = svg.append("g").attr("class", "nodes").selectAll("g")
     .data(graph.nodes).enter().append("g")
@@ -189,14 +191,25 @@ function go() {
   }
 
   function updateLink(links) {
-    links.selectAll("line")
-      .attr("x1", function (d) { return d.source.x; })
-      .attr("y1", function (d) { return d.source.y; })
-      .attr("x2", function (d) { return d.target.x; })
-      .attr("y2", function (d) { return d.target.y; });
+    links.selectAll("path")
+      .attr("d", function (d) {
+        const sourceX = d.source.x;
+        const sourceY = d.source.y;
+        const targetX = d.target.x;
+        const targetY = d.target.y;
+
+        const dx = targetX - sourceX;
+        const dy = targetY - sourceY;
+        const controlX1 = sourceX + dx / 2- d.rand;
+        const controlY1 = sourceY + dy / 2 - d.rand;
+        const controlX2 = targetX - dx / 2- d.rand;
+        const controlY2 = targetY - dy / 2 - d.rand;
+
+        return `M ${sourceX},${sourceY} C ${controlX1},${controlY1} ${controlX2},${controlY2} ${targetX},${targetY}`;
+      });
     links.selectAll("text")
-      .attr("x", function (d) { return (d.source.x + d.target.x) / 2 + 5; })
-      .attr("y", function (d) { return (d.source.y + d.target.y) / 2 + 5; });
+      .attr("x", function (d) { return (d.source.x + d.target.x)/2 - d.rand; })
+      .attr("y", function (d) { return (d.source.y + d.target.y)/2 - d.rand; });
   }
 
   function updateNode(nodes) {
@@ -235,4 +248,3 @@ onMounted(() => {
 });
 
 </script>
-
