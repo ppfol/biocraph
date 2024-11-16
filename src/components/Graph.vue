@@ -5,8 +5,7 @@
 <script setup>
 import * as d3 from "d3";
 import { ref, onMounted, watch } from 'vue';
-import { Kekule } from 'kekule';
-import 'kekule/theme/default'; 
+
 
 let graph = {
   "links": [
@@ -239,6 +238,7 @@ function go() {
     d.fx = null;
     d.fy = null;
   }
+
 
 }
 
